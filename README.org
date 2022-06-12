@@ -27,6 +27,81 @@ const server = http.createServer((req,res)=>{
 server.listen(3000);
 #+end_src
 
+Using the response object.
+#+begin_src js :tangle node_examples/http_res_example.js
+const http = require("http");
+const server = http.createServer((req,res)=>{
+    res.setHeader('Content-Type','text/html');
+    res.write('<html>');
+    res.write('<h1>Hello from node js server</h1>');
+    res.write('</html>');
+    res.end();
+});
+server.listen(3000);
+#+end_src
+After =res.end()= you should no write any more =res.write()= code.
+
+For more information about the request and response headers you can go to the brwoser's developer tools, in the network tab (after reaload) we can see some of the inner html and server work.
+
+*** Checking URL Routes
+We can specify according to the url path the behavior of the server.
+
+In this example if the user request for the root path =/=, then the server will ask for some data.
+After the user push the submit button then the request will be sent to the =/message= path and the server will catch the data submitted, redirect the user to the =/= and print the data submitted by the user and the bottom of the page.
+
+**** Streams & Buffers
+The incomming data is send as a stream of data. The incomming request is read by node in chunks (multiple parts), this is done so we can start working on the chunks without waiting for the whole process to finish. This is useful when we upload a big file and need to precess it.
+#+begin_src mermaid :file stream_buffer.png
+flowchart LR
+  subgraph S[Incomming Stream]
+    direction TB
+    T[Stream] --- N[Idea: Start working on that Data early]
+    style S fill:#84cfcf
+  end
+  subgraph BUFF[Buffer]
+    direction LR
+    C[Request Body Part 3] --- D[Request Body Part 4]
+    style BUFF fill:#42aaf5, stroke-width:4px
+  end
+  subgraph DATA[Data Flow]
+    direction LR
+    S --- A[Request Body Part 1] --- B[Request Body Part 2] --- BUFF --> P[Fully Parsed]
+  end
+
+#+end_src
+
+#+RESULTS:
+[[file:stream_buffer.png]]
+
+A buffer is like a bus stop, you can interact with the data stream. We do this by going to our request function and create an event listener. There are many kind of events, in the case of an incomming stream there is the data event.
+#+begin_src js :tangle node_examples/http_req_res_example.js
+const http = require("http");
+const server = http.createServer((req,res)=>{
+    const url = req.url;
+    let data = undefined;
+    if (url === '/'){
+        res.setHeader('Content-Type','text/html');
+        res.write('<html>');
+        res.write('<h1>Enter Message:</h1>');
+        res.write('<form action="/message" method="POST"><input type="text"></br>')
+        res.write('<input type="submit"></form>')
+        res.write('</html>');
+        //Return function.
+        return res.end();
+    }
+
+    if (url === '/message' && req.method === 'POST'){
+        //Get message and store it in data.
+        console.log(req);
+
+    }
+    res.setHeader('Content-Type','text/html');
+    res.write("<html>Message Recaived</html>");
+    res.end();
+});
+server.listen(3000);
+#+end_src
+
 ** https
 Launch a SSL server.
 ** fs
