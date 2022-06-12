@@ -4,7 +4,10 @@
 #+DESCRIPTION: Nodejs Course Document
 
 * Program Lifecycle
-=node app.js => Start Script => Parse Code, Register Variables & Functions => Event Loop=
+#+begin_src mermaid :file program_lifecycle.png
+flowchart LR
+A[node app.js] --> B[Start Script] --> C[Parse Code, Register Variables & Functions] --> D[Event Loop]
+#+end_src
 
 The event loop keeps on running as long as there are event listeners registered. One of such events is the =server.listen(3000);= (example below) function.
 
