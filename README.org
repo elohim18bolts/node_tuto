@@ -1,0 +1,34 @@
+#+title: Some NodeJs SheetCheat
+
+#+AUTHOR: elohim
+#+DESCRIPTION: Nodejs Course Document
+
+* Program Lifecycle
+=node app.js => Start Script => Parse Code, Register Variables & Functions => Event Loop=
+
+The event loop keeps on running as long as there are event listeners registered. One of such events is the =server.listen(3000);= (example below) function.
+
+*Note*: Nodejs program is single threaded so the event loop implementation is a way to prevent the program to stop and wait for input.
+
+You can exit the event loop by using the =process.exit()= function, this will exit the current event register and kill it.
+
+
+* Core Modules
+
+** http
+Launch a server, send requests.
+
+This is an example of a simple http server. The server listen to any request and =console.log(req)= log the request to console.
+#+begin_src js :tangle node_examples/http_example.js
+const http = require("http");
+const server = http.createServer((req,res)=>{
+    console.log(req);
+});
+server.listen(3000);
+#+end_src
+
+** https
+Launch a SSL server.
+** fs
+** path
+** os
