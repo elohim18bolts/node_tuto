@@ -5,6 +5,7 @@
 
 * Table Of Contents :toc:
 - [[#program-lifecycle][Program Lifecycle]]
+  - [[#event-loop][Event Loop]]
 - [[#core-modules][Core Modules]]
   - [[#http][http]]
   - [[#https][https]]
@@ -26,6 +27,72 @@ The event loop keeps on running as long as there are event listeners registered.
 *Note*: Nodejs program is single threaded so the event loop implementation is a way to prevent the program to stop and wait for input.
 
 You can exit the event loop by using the =process.exit()= function, this will exit the current event register and kill it.
+** Event Loop
+The nodejs program will run in a single thread; but some operations are send to a worker process that uses multi threading. Such of these operations are asynchronous IO, cryptography, compression ... basically heavy operation that require computational power.
+
+*** Heavy Load
+For heavy load(IO, crypto, compression, etc...), nodejs will send the task to a worker pool, this worker is detached from our code. After the worker is finished with the task it will trigger the callback and inform the event loop.
+#+begin_src mermaid :file event_loop.png
+flowchart LR
+subgraph A[Main block]
+direction TB
+subgraph B[Process]
+direction LR
+P[<Your Code>] --> Q[Javascript Single Thread]
+end
+L[Incoming Requests] --> B
+end
+subgraph E[Worker]
+direction TB
+R[Worker Pool] === S[Do the heavy lifting]
+end
+subgraph D[Loop]
+direction TB
+T[Event Loop] === U[Handle Event Callbacks]
+end
+A --> D
+A --> C[fs] --Send To--> E
+E ==> F[Different Thread]
+E --Triger Callback--> D
+#+end_src
+
+#+RESULTS:
+[[file:event_loop.png]]
+
+*** Event Loop Execution
+When the event loop starts (or loop back) it will look for pending tasks in the following order:
+
+#+begin_src mermaid :file event_loop_execution.png
+flowchart LR
+subgraph Z[Event Loop]
+direction LR
+subgraph A[Timers]
+P[Execute setTimeout, setInterval Callbacks]
+end
+subgraph B[Pending Callbacks]
+R[Execute I/O related Callbacks that were deffered]
+end
+subgraph C[Poll]
+S[Retrieve new I/O events, execute their callbacks]
+end
+subgraph D[Check]
+T[Execute setImmediate callback]
+end
+subgraph E[Close callbacks]
+U[Execute all 'close' event callbacks]
+end
+A --> B
+B --> C
+C --> D
+D --> E
+E --> A
+C --Jump to Timer Execution-->A
+C --Or defer execution-->B
+end
+#+end_src
+
+#+RESULTS:
+[[file:event_loop_execution.png]]
 
 
 * Core Modules
