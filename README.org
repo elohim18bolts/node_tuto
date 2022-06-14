@@ -12,6 +12,7 @@
   - [[#fs][fs]]
   - [[#path][path]]
   - [[#os][os]]
+- [[#expressjs][ExpressJs]]
 
 * Program Lifecycle
 #+begin_src mermaid :file program_lifecycle.png
@@ -203,3 +204,44 @@ Launch a SSL server.
 ** fs
 ** path
 ** os
+
+* ExpressJs
+Expressjs is all about middleware. The request can go through a set of function before reaching its destination.
+
+This allow us to prepare or setup the request to be process at the end point.
+
+#+begin_src mermaid :file express_middleware.png
+flowchart TB
+subgraph B[Middleware]
+P["req(),res(),next() => {...}"]
+end
+subgraph C[Middleware]
+Q["req(),res(),next() => {...}"]
+end
+A[Request] --> B --"next()"--> C --"res.send()"--> D[Response] --> E[End Point]
+#+end_src
+
+#+RESULTS:
+[[file:express_middleware.png]]
+
+You can use third party packages such as parsers and analyzers to process the data before it reaches the target, to use a middleware we can use the =use()= method, also we can use the =next()= method to send the output to another middleware and so on, e.g:
+
+#+begin_src js :tangle node_examples/express_middleware_example.js
+const express = require('express');
+
+const app = express();
+
+app.use((req,res,next) => {
+  console.log("Middleware #1");
+  next();
+})
+app.use((req,res,next)=>{
+  console.log("Middleware #2");
+  res.send("<h1>Hello from express</h1>")
+});
+
+const server = http.createServer(app);
+server.listen(3000,()=>{console.log("Server listenning in port: " + 3000)});
+#+end_src
+
+#+RESULTS:
